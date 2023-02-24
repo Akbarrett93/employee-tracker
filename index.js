@@ -15,7 +15,7 @@ const db = mysql.createConnection(
 );
 
 // Inquirer to initiate application
-const inquirerRun = () => {
+function inquirerRun() {
     inquirer.prompt([
         {
             type: "list",
@@ -29,6 +29,19 @@ const inquirerRun = () => {
             case("View Departments"):
             viewDepartments();
             break;
+
+            case("View Roles"):
+            viewRoles();
+            break;
+
+            case("View Employees"):
+            viewEmployees();
+            break;
+
+            case("Add a department"):
+            addDepartment();
+            break;
+
             case("Quit"):
         }
     })
@@ -37,7 +50,7 @@ const inquirerRun = () => {
 
 // Database queries
 
-// View Departments
+// View tables
 function viewDepartments() {
     db.query(`SELECT * FROM departments`, function (err, results) {
         console.log(results);
@@ -45,5 +58,43 @@ function viewDepartments() {
     })
 };
 
+function viewRoles() {
+    db.query(`SELECT * FROM roles`, function (err, results) {
+        console.log(results);
+        inquirerRun();
+    })
+};
+
+function viewEmployees() {
+    db.query(`SELECT * FROM employees`, function (err, results) {
+        console.log(results);
+        inquirerRun();
+    })
+};
+
+// Adding to tables
+function addDepartment() {
+    inquirer.prompt([
+            {
+                type: 'input',
+                name: 'newDept',
+                message: 'What would you like to call the new department?',
+                validate: deptInput => {
+                    if (deptInput) {
+                        return true;
+                    } else {
+                        console.log("Please prove a name for the department");
+                        return false;
+                    }
+                }
+            }
+        ])
+     .then(answers => {
+         db.query("INSERT INTO departments (dep_name) VALUES (?)", [answers.newDept], function (err, results) {
+             if (err) throw err;
+             inquirerRun();
+            })
+        })
+};
 
 inquirerRun();
