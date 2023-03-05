@@ -46,9 +46,13 @@ function inquirerRun() {
             addRole();
             break;
 
+            case("Add an employee"):
+            addEmployee();
+            break;
+
             case("Quit"):
         }
-    })
+    }) 
 };
 
 
@@ -93,10 +97,10 @@ function addDepartment() {
                 }
             }
         ])
-    .then(answers => {
-        db.query("INSERT INTO departments (dep_name) VALUES (?)", [answers.newDept], function (err, results) {
-            if (err) throw err;
-            inquirerRun();
+        .then(answers => {
+            db.query("INSERT INTO departments (dep_name) VALUES (?)", [answers.newDept], function (err, results) {
+                if (err) throw err;
+                inquirerRun();
             })
         })
 };
@@ -144,8 +148,7 @@ function addRole() {
                   }
                   ])
                     .then(answer => {
-                      const dept = answer.roleDep;
-                      params.push(dept);
+                      params.push(answer.roleDep);
                       db.query(`INSERT INTO roles (title, salary, department_id) VALUES (?, ?, ?)`, params, (err, result) => {
                         if (err) throw err;
                         inquirerRun();
@@ -154,4 +157,89 @@ function addRole() {
         })
     })
 };
+
+function addEmployee() {
+    inquirer.prompt([
+        {
+            type: 'input',
+            name: 'first',
+            message: 'What is the employees first name?',
+            validate: firstInput => {
+                if (firstInput) {
+                    return true;
+                } else {
+                    console.log("Every employee must have a name.");
+                    return false;
+                }
+            }
+        },
+        {
+            type: 'input',
+            name: 'last',
+            message: 'What is the employees last name?',
+            validate: lastInput => {
+                if (lastInput) {
+                    return true;
+                } else {
+                    console.log("Every employee must have a name.");
+                    return false;
+                }
+            }
+        }
+    ])
+    .then(answers => {
+        const params = [answers.first, answers.last];
+        db.query(`SELECT * FROM roles`, (err, data) => {
+            if (err) throw err;
+            const role = data.map(({ id, title }) => ({ value: id, name: title }));
+            inquirer.prompt([
+            {
+                type: 'list',
+                name: 'roleTitle',
+                message: 'What role will they fill?',
+                choices: role
+            }
+            ])
+            .then (answer => {
+                params.push(answer.roleTitle);
+                db.query(`SELECT * FROM employees`, (err, data) => {
+                    if (err) throw err;
+                    const manager = data.map(({ id, first_name, last_name }) => ({value: id, name: (first_name + " " + last_name)}));
+                    inquirer.prompt([
+                        {
+                            type: 'confirm',
+                            name: 'mngConfirm',
+                            message: 'Will they report to someone?',
+                            default: false,
+                        },
+                        {
+                            type: 'list',
+                            name: 'mngName',
+                            message: 'Who is their manager?',
+                            choices: manager,
+                            when: ({mngConfirm}) => {
+                                if (mngConfirm) {
+                                    return true;
+                                } else {
+                                    return false;
+                                }
+                            }
+                        }
+                    ])
+                    .then(answer => {
+                        params.push(answer.mngName);
+                        db.query(`INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)`, params, (err, result) => {
+                            if (err) throw err;
+                            inquirerRun();
+                        })
+                    })
+                })
+            })
+            
+        })
+    })
+};
+
+function UpdateEmployee (){}
+
 inquirerRun();
