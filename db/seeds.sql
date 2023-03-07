@@ -14,4 +14,8 @@ VALUES  ("HR Generalist", 75000, 1),
 
 INSERT INTO employees (first_name, last_name, role_id, manager_id)
 VALUES  ("Paul", "Coffey", 4, NULL),
-        ("Octavious", "Moore", 6, 4);
+        ("Octavious", "Moore", 6, 4),
+        ("Tom", "Claffey", 5, 3),
+        ("Dane", "Thomason", 3, NULL),
+        ("John", "Clark", 2, NULL),
+        ("Dontae", "Simmons", 1, NULL);

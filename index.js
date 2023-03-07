@@ -50,7 +50,13 @@ function inquirerRun() {
             addEmployee();
             break;
 
+            case("Update employee role"):
+            updateEmployee();
+            break;
+
             case("Quit"):
+            db.end();
+            break;
         }
     }) 
 };
@@ -61,21 +67,21 @@ function inquirerRun() {
 // View tables
 function viewDepartments() {
     db.query(`SELECT * FROM departments`, function (err, results) {
-        console.log(results);
+        console.table(results);
         inquirerRun();
     })
 };
 
 function viewRoles() {
     db.query(`SELECT * FROM roles`, function (err, results) {
-        console.log(results);
+        console.table(results);
         inquirerRun();
     })
 };
 
 function viewEmployees() {
     db.query(`SELECT * FROM employees`, function (err, results) {
-        console.log(results);
+        console.table(results);
         inquirerRun();
     })
 };
@@ -135,6 +141,7 @@ function addRole() {
                 },
             ])
             .then(answer => {
+                // Adding the role to a department
                 const params = [answer.title, answer.salary];
                 db.query(`SELECT * FROM departments`, (err, data) => {
                   if (err) throw err;
@@ -188,7 +195,8 @@ function addEmployee() {
         }
     ])
     .then(answers => {
-        const params = [answers.first, answers.last];
+        // Adding a role to the employee
+        let params = [answers.first, answers.last];
         db.query(`SELECT * FROM roles`, (err, data) => {
             if (err) throw err;
             const role = data.map(({ id, title }) => ({ value: id, name: title }));
@@ -201,6 +209,7 @@ function addEmployee() {
             }
             ])
             .then (answer => {
+                // Adding a manager if any
                 params.push(answer.roleTitle);
                 db.query(`SELECT * FROM employees`, (err, data) => {
                     if (err) throw err;
@@ -227,6 +236,7 @@ function addEmployee() {
                         }
                     ])
                     .then(answer => {
+                        // Adding info to database
                         params.push(answer.mngName);
                         db.query(`INSERT INTO employees (first_name, last_name, role_id, manager_id) VALUES (?, ?, ?, ?)`, params, (err, result) => {
                             if (err) throw err;
@@ -240,6 +250,51 @@ function addEmployee() {
     })
 };
 
-function UpdateEmployee (){}
+function updateEmployee(){
+    // Listing employees to update
+    db.query(`SELECT * FROM employees`, function (err, data) {
+        if (err) throw err;
+        let empArray = data.map(({ id, first_name, last_name }) => ({value: id, name: (first_name + " " + last_name)}));
+        inquirer.prompt([
+            {
+                type: 'list',
+                name: 'empSelect',
+                message: 'Which employee do you want to update?',
+                choices: empArray
+            }
+        ])
+        .then(answer => {
+            // Listing what roles to give
+            let params = [];
+            const employee = answer.empSelect;
+            params.push(employee);
+            db.query(`SELECT * FROM roles`, function (err, data) {
+                if (err) throw err;
+                const roleArray = data.map(({ id, title }) => ({ value: id, name: title }));
+                inquirer.prompt([
+                    {
+                        type: 'list',
+                        name: 'roleSelect',
+                        message: 'What roles are they moving to?',
+                        choices: roleArray
+                    }
+                ])
+                // Adding info to the database
+                .then(answer => {
+                    const role = answer.roleSelect
+                    params.push(role);
+                    // Arranging array for query
+                    let employee = params[0]
+                    params[0] = role
+                    params[1] = employee
+                    db.query(`UPDATE employees SET role_id = ? WHERE id = ?`, params, (err, result) => {
+                        if (err) throw err;
+                        inquirerRun();
+                    })
+                })
+            })
+        })
+    })
+}
 
 inquirerRun();

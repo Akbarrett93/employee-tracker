@@ -19,6 +19,6 @@ CREATE TABLE employees(
     id INT AUTO_INCREMENT NOT NULL PRIMARY KEY,
     first_name VARCHAR(30) NOT NULL,
     last_name VARCHAR(30) NOT NULL,
-    role_id INT REFERENCES role(id) ON DELETE SET NULL,
+    role_id INT REFERENCES roles(id) ON DELETE SET NULL,
     manager_id INT REFERENCES employees(id) ON DELETE SET NULL
 );
