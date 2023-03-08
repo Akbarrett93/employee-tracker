@@ -80,7 +80,16 @@ function viewRoles() {
 };
 
 function viewEmployees() {
-    db.query(`SELECT * FROM employees`, function (err, results) {
+    db.query(`SELECT employees.first_name, 
+                employees.last_name, 
+                roles.title, 
+                departments.dep_name AS department, 
+                roles.salary, 
+                CONCAT (manager.first_name, " ", manager.last_name) AS manager
+            FROM employees 
+                LEFT JOIN roles ON employees.role_id = roles.id
+                LEFT JOIN departments ON roles.department_id = departments.id
+                LEFT JOIN employees manager ON employees.manager_id = manager.id`, function (err, results) {
         console.table(results);
         inquirerRun();
     })
