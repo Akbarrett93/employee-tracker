@@ -15,6 +15,10 @@ Download project and install npm
 ## Usage
 Run "node index.js" to start
 
+https://user-images.githubusercontent.com/118003612/234996895-907eba16-db9a-4569-95bd-046468dba7ac.mp4
+
+
+
 ## Questions
 Have questions? 
 
